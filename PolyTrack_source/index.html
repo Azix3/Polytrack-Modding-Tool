@@ -1,0 +1,358 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="preload" href="forced_square.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="images/logo.svg" as="image" type="image/svg+xml">
+  <link rel="preload" href="images/discord.svg" as="image" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+  <style>
+    :root {
+      --text-color: #fff;
+      --text-disabled-color: #5d6a7c;
+      --surface-color: #28346a;
+      --surface-secondary-color: #212b58;
+      --surface-tertiary-color: #192042;
+      --surface-transparent-color: rgba(40, 52, 106, 0.5);
+      --button-color: #112052;
+      --button-hover-color: #334b77;
+      --button-active-color: #151f41;
+      --button-disabled-color: #313d53;
+    }
+
+    @font-face {
+      font-family: ForcedSquare;
+      src:
+        url("forced_square.woff2") format("woff2"),
+        url("forced_square.woff") format("woff"),
+        url("forced_square.ttf") format("truetype");
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #000;
+    }
+
+    body {
+      scrollbar-color: #7272c2 #223;
+      touch-action: none;
+    }
+
+    * {
+      font-style: italic;
+      font-family: ForcedSquare, Arial, sans-serif;
+      line-height: 1;
+      box-sizing: border-box;
+    }
+
+    #screen {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at top, rgba(92, 117, 203, 0.35), transparent 40%),
+        linear-gradient(180deg, #151a36 0%, #090c18 100%);
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+    }
+
+    #ui {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      transform-origin: 0 0;
+      pointer-events: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    #transition-layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      pointer-events: none;
+      opacity: 0;
+      transition: 0.25s ease-in-out opacity;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      background-color: #223;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      border-radius: 4px;
+      background-color: #7272c2;
+    }
+
+    #boot-mod-picker {
+      position: absolute;
+      inset: 0;
+      z-index: 999999;
+      display: flex;
+      justify-content: center;
+      pointer-events: auto;
+      background:
+        radial-gradient(circle at top, rgba(77, 101, 187, 0.3), transparent 30%),
+        rgba(9, 12, 24, 0.9);
+    }
+
+    #boot-mod-picker[hidden] {
+      display: none;
+    }
+
+    .boot-mod-shell {
+      width: min(820px, 100vw);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--surface-color);
+      box-shadow:
+        0 0 0 2px rgba(255, 255, 255, 0.04),
+        0 18px 64px rgba(0, 0, 0, 0.5);
+    }
+
+    .boot-mod-header {
+      padding: 20px 20px 16px;
+      background-color: var(--surface-color);
+      text-align: center;
+    }
+
+    .boot-mod-logo {
+      display: block;
+      width: min(360px, calc(100% - 16px));
+      margin: 0 auto 10px;
+    }
+
+    .boot-mod-title {
+      margin: 0;
+      padding: 0;
+      font-size: 38px;
+      font-weight: normal;
+      color: var(--text-color);
+    }
+
+    .boot-mod-copy {
+      margin: 10px 0 0;
+      padding: 0;
+      font-size: 20px;
+      color: var(--text-color);
+      opacity: 0.85;
+    }
+
+    .boot-mod-content {
+      flex-grow: 1;
+      padding: 14px;
+      overflow-y: auto;
+      background-color: var(--surface-secondary-color);
+    }
+
+    .boot-mod-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .boot-mod-option {
+      margin: 0;
+      padding: 8px;
+      width: 100%;
+      border: none;
+      color: var(--text-color);
+      text-align: left;
+      cursor: pointer;
+      background-color: var(--button-color);
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+      transition: background-color 120ms ease;
+    }
+
+    .boot-mod-option:hover,
+    .boot-mod-option:focus-visible,
+    .boot-mod-option.is-selected {
+      background-color: var(--button-hover-color);
+      outline: none;
+    }
+
+    .boot-mod-option:active {
+      background-color: var(--button-active-color);
+    }
+
+    .boot-mod-option.is-disabled,
+    .boot-mod-option:disabled {
+      cursor: not-allowed;
+      background-color: var(--button-disabled-color);
+      color: var(--text-disabled-color);
+    }
+
+    .boot-mod-option-inner {
+      display: block;
+      padding: 10px 12px;
+      min-height: 98px;
+      background-color: var(--surface-tertiary-color);
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+    }
+
+    .boot-mod-option.is-selected > .boot-mod-option-inner {
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .boot-mod-option-index {
+      display: inline-block;
+      min-width: 42px;
+      font-size: 18px;
+      color: #9ab1ff;
+      vertical-align: top;
+    }
+
+    .boot-mod-option-title {
+      display: inline-block;
+      margin: 0;
+      font-size: 28px;
+      font-weight: normal;
+      color: inherit;
+      vertical-align: top;
+    }
+
+    .boot-mod-option-copy {
+      display: block;
+      margin: 12px 0 0;
+      font-size: 18px;
+      color: inherit;
+      opacity: 0.9;
+    }
+
+    .boot-mod-option-meta {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #9ab1ff;
+      opacity: 0.95;
+    }
+
+    .boot-mod-footer {
+      margin: 14px 0 0;
+      padding: 0;
+      font-size: 18px;
+      color: var(--text-color);
+    }
+
+    .boot-mod-path {
+      margin: 12px 0 0;
+      padding: 0;
+      font-size: 14px;
+      color: #9ab1ff;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .boot-mod-errors {
+      margin: 14px 0 0;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.35;
+      color: #ffd4d4;
+      white-space: pre-wrap;
+      background-color: rgba(0, 0, 0, 0.22);
+      border-left: 4px solid #b45b5b;
+    }
+
+    .boot-mod-errors[hidden] {
+      display: none;
+    }
+
+    .boot-mod-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px 14px;
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    @media (max-width: 860px) {
+      .boot-mod-shell {
+        width: 100vw;
+      }
+
+      .boot-mod-header {
+        padding: 16px 14px 12px;
+      }
+
+      .boot-mod-title {
+        font-size: 30px;
+      }
+
+      .boot-mod-copy {
+        font-size: 16px;
+      }
+
+      .boot-mod-content {
+        padding: 10px;
+      }
+
+      .boot-mod-option-inner {
+        min-height: 84px;
+      }
+
+      .boot-mod-option-title {
+        font-size: 22px;
+      }
+
+      .boot-mod-option-copy,
+      .boot-mod-footer {
+        font-size: 16px;
+      }
+
+      .boot-mod-toolbar {
+        flex-direction: column;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="screen"></canvas>
+  <div id="boot-mod-picker" role="dialog" aria-modal="true" aria-labelledby="boot-mod-title">
+    <div class="boot-mod-shell">
+      <div class="boot-mod-header">
+        <img class="boot-mod-logo" src="images/logo.svg" alt="PolyTrack">
+        <h1 class="boot-mod-title" id="boot-mod-title">Mod Select</h1>
+        <p class="boot-mod-copy">Choose a mod before the main menu loads.</p>
+      </div>
+      <div class="boot-mod-content">
+        <div class="boot-mod-options" data-mod-options></div>
+        <p class="boot-mod-footer" data-current-mod>Scanning mods...</p>
+        <p class="boot-mod-path" data-mod-path></p>
+        <pre class="boot-mod-errors" data-mod-errors hidden></pre>
+      </div>
+      <div class="boot-mod-toolbar">
+        <span>Press 1-9 to launch a mod quickly.</span>
+        <span>Copy `_template` in the mods folder to create a new mod.</span>
+      </div>
+    </div>
+  </div>
+  <div id="ui"></div>
+  <div id="transition-layer"></div>
+  <script src="mod_loader.js"></script>
+</body>
+</html>
