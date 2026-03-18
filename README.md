@@ -1,6 +1,6 @@
-# PolyTrack Modding Guide
+This is a tool to create mods for and to edit functions within polytrack 0.6.0
 
-This guide is written for any user who installs this mod pack into an existing copy of PolyTrack.
+# PolyTrack Modding Guide
 
 It covers:
 - how the packaged mod loader works
