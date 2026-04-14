@@ -7,7 +7,7 @@ Also in this folder is a decompiled copy of Polytrack 0.6.0
 It covers:
 - how the packaged mod loader works
 - how to create and install folder-based mods
-- what the built-in mod API exposes
+- what the built-in mod API exposes [more API points to come]
 - optional advanced workflows for editing tracks or repacking the app bundle
 
 ## What This Package Changes
